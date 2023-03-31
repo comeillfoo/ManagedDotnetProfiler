@@ -17,7 +17,9 @@ namespace ManagedDotnetProfiler
                 return HResult.E_FAIL;
             }
 
-            var eventMask = CorPrfMonitor.COR_PRF_MONITOR_EXCEPTIONS | CorPrfMonitor.COR_PRF_MONITOR_JIT_COMPILATION;
+            var eventMask = CorPrfMonitor.COR_PRF_MONITOR_EXCEPTIONS
+                | CorPrfMonitor.COR_PRF_MONITOR_JIT_COMPILATION
+                | CorPrfMonitor.COR_PRF_MONITOR_CLASS_LOADS;
 
             Console.WriteLine("[Profiler] Setting event mask to " + eventMask);
 
@@ -29,7 +31,7 @@ namespace ManagedDotnetProfiler
             ICorProfilerInfo2.GetFunctionInfo(functionId, out var classId, out var moduleId, out var mdToken);
 
             ICorProfilerInfo2.GetModuleMetaData(moduleId, CorOpenFlags.ofRead, KnownGuids.IMetaDataImport, out var metaDataImport);
-            
+
             metaDataImport.GetMethodProps(new MdMethodDef(mdToken), out var typeDef, null, 0, out var size, out _, out _, out _, out _, out _);
 
             var buffer = new char[size];
@@ -137,5 +139,28 @@ namespace ManagedDotnetProfiler
             return HResult.S_OK;
         }
 
+        protected override HResult ClassLoadStarted(ClassId classId)
+        {
+            Console.WriteLine($"[Profiler] class {classId.Value} load started");
+            return HResult.S_OK;
+        }
+
+        protected override HResult ClassLoadFinished(ClassId classId, HResult hrStatus)
+        {
+            Console.WriteLine($"[Profiler] class {classId.Value} load finished [{hrStatus.Value}]");
+            return HResult.S_OK;
+        }
+
+        protected override HResult ClassUnloadStarted(ClassId classId)
+        {
+            Console.WriteLine($"[Profiler] class {classId.Value} load started");
+            return HResult.S_OK;
+        }
+
+        protected override HResult ClassUnloadFinished(ClassId classId, HResult hrStatus)
+        {
+            Console.WriteLine($"[Profiler] class {classId.Value} unload finished [{hrStatus.Value}]");
+            return HResult.S_OK;
+        }
     }
 }
